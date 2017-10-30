@@ -2,10 +2,9 @@
 
 **Ancestral Sequence Reconstruction in Python**
 
-PyASR provides a simple Python interface for Ancestral Sequence Reconstruction (ASR).
-Reconstruct ancestral sequences from a phylogenetic tree and multiple sequence alignment. 
-Paired with [PhyloPandas](https://github.com/Zsailer/phylopandas), PyASR makes ASR
-simple and human readable. 
+PyASR provides a simple Python interface for Ancestral Sequence Reconstruction (ASR). Easily reconstruct a set of ancestral protein/DNA sequences from a phylogenetic tree and a multiple sequence alignment without leaving Python. Check out the example below!
+
+Under the hood, PyASR wraps [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) ("Phylogenetic Analysis by Maximum Likelihood"). It, then, uses [PhyloPandas](https://github.com/Zsailer/phylopandas) to store the results in human-readable DataFrames. 
 
 ## Basic Usage
 
@@ -42,9 +41,14 @@ pip install -e .
 
 ## Dependencies
 
+The actual reconstruction calculation are done using [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html). This requires PAML to be 
+installed and the `codeml`/`baseml` executables exported to your `$PATH` environment variable. Directions for installing PAML can be found on the PAML website. 
+
 The following Python dependencies are required for PyASR to work.
 
 - Pandas
 - Biopython
 - PhyloPandas
 - DendroPy
+
+The 
