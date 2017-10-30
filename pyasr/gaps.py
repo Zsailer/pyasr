@@ -1,6 +1,6 @@
 import dendropy
 
-def add_gaps_to_ancestors(tree, df_seq, df_anc):
+def add_gaps_to_ancestors(tree, df_seq, df_anc, id_col='id'):
     """Estimate gaps for ancestral nodes.
     Handling Gaps
     -------------
@@ -11,7 +11,7 @@ def add_gaps_to_ancestors(tree, df_seq, df_anc):
     taxa = tree.taxon_namespace
 
     # Get alignment as fasta
-    alignment = df_seq.to_fasta(id_only=True)
+    alignment = df_seq.to_fasta(id_col=id_col, id_only=True)
 
     # Build a Sequence data matrix from Dendropy
     data = dendropy.ProteinCharacterMatrix.get(
@@ -30,11 +30,13 @@ def add_gaps_to_ancestors(tree, df_seq, df_anc):
     dendropy.model.parsimony.fitch_down_pass(tree.postorder_node_iter(),
             taxon_state_sets_map=taxon_state_sets_map)
     dendropy.model.parsimony.fitch_up_pass(tree.preorder_node_iter())
-    
+
     # Interate through ancestors and insert gaps.
     for node in tree.internal_nodes():
         # get ancestor sequence
-        anc_seq = list(df_anc['sequence'][node.label])
+        row = df_anc.loc[df_anc['id']==node.label]
+
+        anc_seq = list(row['sequence'][0])
         
         for i, site in enumerate(node.state_sets):
             # Get a list of possible residues at each site.
@@ -45,6 +47,7 @@ def add_gaps_to_ancestors(tree, df_seq, df_anc):
                 anc_seq[i] = "-"
                 
         # Set value in ancestor dataframe
-        df_anc.set_value(node.label, 'sequence', ''.join(anc_seq))
+        df_anc.loc[df_anc['id']==node.label, 'sequence'] = ''.join(anc_seq)
+        #df_anc.set_value(node.label, 'sequence', ''.join(anc_seq))
         
     return tree, df_seq, df_anc

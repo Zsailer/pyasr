@@ -26,7 +26,7 @@ def read_codeml_output(filename):
         node.label = ancestors[i].label
 
     # Compile a regular expression to find blocks of data for internal nodes
-    node_regex = re.compile("""Prob distribution at node [0-9]+, by site[-\w():.\s]+""")
+    node_regex = re.compile("""Prob distribution at node [0-9]+, by site[-\w():.\s]+\n\n""")
     # Strip the node number from this block of data.
     node_num_regex = re.compile("[0-9]+")
 
