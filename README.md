@@ -25,7 +25,7 @@ df_anc.to_csv('ancestors.csv')
 We can visualize the ancestors side-by-side with the tree using inside of JupyterLab
 thanks to the ToyTree library.
 
-<img src="docs/lab-img.png" align="middle">
+<img src="docs/jlab-example.png" align="middle">
 
 ## Install
 
