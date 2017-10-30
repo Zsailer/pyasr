@@ -50,5 +50,3 @@ The following Python dependencies are required for PyASR to work.
 - Biopython
 - PhyloPandas
 - DendroPy
-
-The 
