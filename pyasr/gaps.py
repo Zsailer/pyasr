@@ -1,6 +1,6 @@
 import dendropy
 
-def infer_gaps(tree, df_seq, df_anc):
+def add_gaps_to_ancestors(tree, df_seq, df_anc):
     """Estimate gaps for ancestral nodes.
     Handling Gaps
     -------------

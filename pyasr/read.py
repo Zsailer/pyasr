@@ -3,7 +3,8 @@ import dendropy
 from phylopandas import DataFrame
 
 def read_codeml_output(filename):
-    """Read codeml output and get ancestors as DataFrame. Returns DataFrame and tree as a string.
+    """Read codeml output and get ancestors as DataFrame. 
+    Returns DataFrame and tree as a string.
     """
     # Read paml output.
     with open(filename, 'r') as f:
