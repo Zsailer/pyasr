@@ -6,6 +6,8 @@ PyASR provides a simple Python interface for Ancestral Sequence Reconstruction (
 
 Under the hood, PyASR wraps [PAML](http://abacus.gene.ucl.ac.uk/software/paml.html) ("Phylogenetic Analysis by Maximum Likelihood"). It then uses [PhyloPandas](https://github.com/Zsailer/phylopandas) to store the results in human-readable DataFrames. 
 
+**NOTE:** PyASR currently only supports protein reconstructions. This is a work in progress.
+
 ## Basic Usage
 
 ```python
