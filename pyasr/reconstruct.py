@@ -141,7 +141,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
                     ml_p.append(df['ml_posterior'][i]) 
                     
                     # Should we flip this site for the altall seq? 
-                    if df['alt_posterior'][i] < alt_all_cutoff:
+                    if df['alt_posterior'][i] < altall_cutoff:
                         # Don't flip, keep the ML value.
                         alt_seq[i] = df['ml_residue'][i]
                         alt_p.append(df['ml_posterior'][i])
