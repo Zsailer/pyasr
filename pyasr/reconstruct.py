@@ -9,7 +9,7 @@ from phylopandas import DataFrame
 from .read import read_codeml_output
 from .gaps import infer_gaps_in_tree
 
-def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir='', save_ancestors=False, alt_all_cutoff=0.2, infer_gaps=True, aaRatefile='lg', **kwargs):
+def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir='', save_ancestors=False, altall_cutoff=0.2, infer_gaps=True, aaRatefile='lg', **kwargs):
     """Use PAML to contruct ancestral sequences by Maximum Likelihood.
     
     Parameters
@@ -24,6 +24,11 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
         column of aligned sequences to use for reconstruction.
     working_dir : str (default = '')
         directory to spew PAML output.
+    save_ancestors : bool (default=False)
+        save ancestors dataframes to file.
+    altall_cutoff : float (default=0.2)
+        probability cutoff for selecting alternative sites to flip in AltAll sequence. Flips any
+        sites whose posterior is greater than or equal to altall_cutoff.
     infer_gaps : bool (default='true')
         If tree, uses Fitch's algorithm to infer gaps in the ancestral sequences.
     aaRatefile : str (default='lg')
@@ -175,7 +180,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
                 ml_p.append(df['ml_posterior'][i]) 
                 
                 # Should we flip this site for the altall seq? 
-                if df['alt_posterior'][i] < alt_all_cutoff:
+                if df['alt_posterior'][i] < altall_cutoff:
                     # Don't flip, keep the ML value.
                     alt_seq[i] = df['ml_residue'][i]
                     alt_p.append(df['ml_posterior'][i])
