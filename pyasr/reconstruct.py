@@ -4,12 +4,13 @@ import subprocess
 import pkg_resources
 
 from Bio.Phylo.PAML import codeml
+from phylopandas import DataFrame
 
 from .read import read_codeml_output
-from .gaps import add_gaps_to_ancestors
+from .gaps import infer_gaps_in_tree
 
-def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir='', infer_gaps=True, aaRatefile='lg', **kwargs):
-    """Use PAML to build a phylogenetic tree.
+def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir='', save_ancestors=False, alt_all_cutoff=0.2, infer_gaps=True, aaRatefile='lg', **kwargs):
+    """Use PAML to contruct ancestral sequences by Maximum Likelihood.
     
     Parameters
     ----------
@@ -96,10 +97,102 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
     
     # Parse output.
     rst_file = os.path.join(working_dir, 'rst')
-    df_ancs, tree_ancs = read_codeml_output(rst_file)
+    ancestors, tree = read_codeml_output(rst_file)
 
-    # Infer gaps
-    if infer_gaps == True:
-        df_seq, df_ancs, tree_ancs = add_gaps_to_ancestors(df_seq, df_ancs, tree_ancs, id_col=id_col)
+    # Save ancestors to 'ancestors' directory in working_dir
+    if save_ancestors:
+        for anc, df in ancestors.items():
+            path = os.path.join(working_dir, 'ancestors', '{}'.format(anc))
+            df.to_csv(path)
 
-    return df_seq, df_ancs, tree_ancs
+    # Summarize data in a single dataframe
+    data = {'id':[], 'ml_sequence':[], 'ml_posterior':[], 'alt_sequence':[], 'alt_posterior':[]}
+    
+    if infer_gaps:
+        # Infer gaps in tree object
+        tree = infer_gaps_in_tree(df_seq, tree, id_col=id_col)
+        gap = 21 # Gap index in state_sets
+        
+        for anc, df in ancestors.items():
+            # Get ML_sequence
+            ml_seq = list(df['ml_residue'])
+            alt_seq = list(df['alt_residue'])
+            ml_p, alt_p = [], [] 
+            
+            # Get node in tree object.
+            node = tree.find_node_with_label(anc)
+            
+            # Build sequences and probability statistics
+            for i, site in enumerate(ml_seq):
+                # Get a list of possible residues at each site.
+                sites = list(node.state_sets[i])
+                
+                # Check if site should be a gap.
+                if len(sites) == 1 and sites[0] == gap:
+                    ml_seq[i] = "-"
+                    alt_seq[i] = "-"
+                else:
+                    # If no gap, append ML site to ML sequence
+                    ml_p.append(df['ml_posterior'][i]) 
+                    
+                    # Should we flip this site for the altall seq? 
+                    if df['alt_posterior'][i] < alt_all_cutoff:
+                        # Don't flip, keep the ML value.
+                        alt_seq[i] = df['ml_residue'][i]
+                        alt_p.append(df['ml_posterior'][i])
+                    else:
+                        # Flip and get posterior value.
+                        alt_p.append(df['alt_posterior'][i])
+            
+            # Start everything in data.
+            ml_sequence = ''.join(ml_seq)
+            alt_sequence = ''.join(alt_seq)
+            ml_posterior = sum(ml_p) / len(ml_p)
+            alt_posterior = sum(alt_p) / len(alt_p)
+            data['id'].append(anc)
+            data['ml_sequence'].append(ml_sequence)
+            data['ml_posterior'].append(ml_posterior)
+            data['alt_sequence'].append(alt_sequence)
+            data['alt_posterior'].append(alt_posterior)
+            
+    else:
+
+        for anc, df in ancestors.items():
+            # Get ML_sequence
+            ml_seq = list(df['ml_residue'])
+            alt_seq = list(df['alt_residue'])
+            ml_p, alt_p = [], [] 
+            
+            # Get node in tree object.
+            node = tree.find_node_with_label(anc)
+            
+            # Build sequences and probability statistics
+            for i, site in enumerate(ml_seq):
+                # Get a list of possible residues at each site.
+                sites = list(node.state_sets[i])
+                
+                # If no gap, append ML site to ML sequence
+                ml_p.append(df['ml_posterior'][i]) 
+                
+                # Should we flip this site for the altall seq? 
+                if df['alt_posterior'][i] < alt_all_cutoff:
+                    # Don't flip, keep the ML value.
+                    alt_seq[i] = df['ml_residue'][i]
+                    alt_p.append(df['ml_posterior'][i])
+                else:
+                    # Flip and get posterior value.
+                    alt_p.append(df['alt_posterior'][i])
+            
+            # Start everything in data.
+            ml_sequence = ''.join(ml_seq)
+            alt_sequence = ''.join(alt_seq)
+            ml_posterior = sum(ml_p) / len(ml_p)
+            alt_posterior = sum(alt_p) / len(alt_p)
+            data['id'].append(anc)
+            data['ml_sequence'].append(ml_sequence)
+            data['ml_posterior'].append(ml_posterior)
+            data['alt_sequence'].append(alt_sequence)
+            data['alt_posterior'].append(alt_posterior)
+            
+    df_ancs = DataFrame(data)
+    return df_seq, df_ancs, tree
