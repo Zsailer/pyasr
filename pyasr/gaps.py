@@ -1,13 +1,7 @@
 import dendropy
 
-def add_gaps_to_ancestors(tree, df_seq, df_anc, id_col='id'):
-    """Estimate gaps for ancestral nodes.
-    Handling Gaps
-    -------------
-    Uses Fitch Parsimony to determine sites in ancestral sequences that
-    are likely gaps. The posterior probability of these sites are ignored
-    when calculating the average posterior probability of the ancestor.
-    """
+def add_gaps_to_ancestors(df_seq, df_anc, tree, id_col='id'):
+    """Place gaps in reconstructed ancestral sequences using Fitch's algorithm."""
     taxa = tree.taxon_namespace
 
     # Get alignment as fasta
@@ -48,6 +42,5 @@ def add_gaps_to_ancestors(tree, df_seq, df_anc, id_col='id'):
                 
         # Set value in ancestor dataframe
         df_anc.loc[df_anc['id']==node.label, 'sequence'] = ''.join(anc_seq)
-        #df_anc.set_value(node.label, 'sequence', ''.join(anc_seq))
         
-    return tree, df_seq, df_anc
+    return df_seq, df_anc, tree

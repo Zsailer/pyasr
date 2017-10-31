@@ -8,8 +8,36 @@ from Bio.Phylo.PAML import codeml
 from .read import read_codeml_output
 from .gaps import add_gaps_to_ancestors
 
-def reconstruct(df, tree, id_col='id', sequence_col='sequence', working_dir='', infer_gaps=True, aaRatefile='lg', **kwargs):
-    """Use PAML to build a phylogenetic tree."""
+def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir='', infer_gaps=True, aaRatefile='lg', **kwargs):
+    """Use PAML to build a phylogenetic tree.
+    
+    Parameters
+    ----------
+    df_seq : phylopandas.DataFrame
+        dataframe containing information (including sequences) about tips of tree.
+    tree : dendropy.Tree
+        Tree object that includes leaf nodes for each sequence in the dataframe.
+    id_col: str (default = 'id')
+        column in df_seq that maps the sequences in df_seq to the tree tips.
+    sequence_col : str (default = 'sequence')
+        column of aligned sequences to use for reconstruction.
+    working_dir : str (default = '')
+        directory to spew PAML output.
+    infer_gaps : bool (default='true')
+        If tree, uses Fitch's algorithm to infer gaps in the ancestral sequences.
+    aaRatefile : str (default='lg')
+        Evolutionary model to use for reconstruction. Read more about these models
+        in the PAML documentation.
+        
+    Returns
+    -------
+    df_seq : phylopandas.DataFrame
+        dataframe containing information (including sequences) about tips of the tree.
+    df_ancs : phylopandas.DataFrame
+        dataframe containing information (including sequences) about ancestors of the tree.
+    tree_ancs : dendropy.Tree
+        Tree updated with ancestral nodes labelled according to df_ancs
+    """
     # Construct default arguments
     default_options = dict(verbose=9, CodonFreq=None, cleandata=0,
         fix_blength=2, NSsites=None, fix_omega=None, clock=None,
@@ -23,10 +51,10 @@ def reconstruct(df, tree, id_col='id', sequence_col='sequence', working_dir='', 
 
     # Write file to disk
     ### NEED TO FIX SEQUENCE COL!!
-    n, m = len(df), len(df['sequence'][0])
+    n, m = len(df_seq), len(df_seq['sequence'][0])
     alignment_file = 'alignment.phy'
     alignment_path = os.path.join(working_dir, alignment_file)
-    alignment_str = df.to_fasta(sequence_col=sequence_col, id_col=id_col, id_only=True)
+    alignment_str = df_seq.to_fasta(sequence_col=sequence_col, id_col=id_col, id_only=True)
     alignment_str = "{} {}\n".format(n,m) + alignment_str
     
     with open(alignment_path, 'w') as f:
@@ -54,34 +82,7 @@ def reconstruct(df, tree, id_col='id', sequence_col='sequence', working_dir='', 
         out_file=output_path,
         working_dir=working_dir)
     cml.set_options(aaRatefile=model_file, **default_options)
-        # verbose = verbose,
-        # CodonFreq = CodonFreq,
-        # cleandata = cleandata,
-        # fix_blength = fix_blength,
-        # NSsites = NSsites,
-        # fix_omega = fix_omega,
-        # clock = clock,
-        # ncatG = ncatG,
-        # runmode = runmode,
-        # fix_kappa = fix_kappa,
-        # fix_alpha = fix_alpha,
-        # Small_Diff = Small_Diff,
-        # method = method,
-        # Malpha = Malpha,
-        # aaDist = aaDist,
-        # RateAncestor = RateAncestor,
-        # aaRatefile = model_file,
-        # icode = icode,
-        # alpha = alpha,
-        # seqtype = seqtype,
-        # omega = omega,
-        # getSE = getSE,
-        # noisy = noisy,
-        # Mgene = Mgene,
-        # kappa = kappa,
-        # model = model,
-        # ndata = ndata)
-        
+
     # Write out control file.
     cml.ctl_file = os.path.join(working_dir, 'codeml_options.ctl')
     cml.write_ctl_file()     
@@ -95,10 +96,10 @@ def reconstruct(df, tree, id_col='id', sequence_col='sequence', working_dir='', 
     
     # Parse output.
     rst_file = os.path.join(working_dir, 'rst')
-    tree_ancs, df_ancs = read_codeml_output(rst_file)
+    df_ancs, tree_ancs = read_codeml_output(rst_file)
 
     # Infer gaps
     if infer_gaps == True:
-        tree_ancs, df_seq, df_ancs = add_gaps_to_ancestors(tree_ancs, df, df_ancs, id_col=id_col)
+        df_seq, df_ancs, tree_ancs = add_gaps_to_ancestors(df_seq, df_ancs, tree_ancs, id_col=id_col)
 
-    return tree_ancs, df_seq, df_ancs
+    return df_seq, df_ancs, tree_ancs

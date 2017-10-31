@@ -3,7 +3,8 @@ import dendropy
 from phylopandas import DataFrame
 
 def read_codeml_output(filename):
-    """Read codeml output and get ancestors as DataFrame. 
+    """Parse the 'rst' file returned by codeml. 
+    
     Returns DataFrame and tree as a string.
     """
     # Read paml output.
@@ -55,6 +56,4 @@ def read_codeml_output(filename):
         posteriors.append(sum(post)/len(post))
         
     df = DataFrame({'id':index, "sequence":sequences, "posterior":posteriors}, index=index)
-    return main_tree, df
-
-    
+    return df, main_tree
