@@ -102,7 +102,13 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
     
     # Parse output.
     rst_file = os.path.join(working_dir, 'rst')
-    ancestors, tree = read_codeml_output(rst_file)
+    ancestors, anc_tree = read_codeml_output(rst_file)
+
+    # Map ancestors (and support) onto main tree object.
+    anc_nodes = anc_tree.internal_nodes()
+    for i, node in enumerate(tree.internal_nodes()):
+        node.support = node.label
+        node.label = anc_nodes[i].label
 
     # Save ancestors to 'ancestors' directory in working_dir
     if save_ancestors:
@@ -111,8 +117,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
             df.to_csv(path)
 
     # Summarize data in a single dataframe
-    data = {'id':[], 'ml_sequence':[], 'ml_posterior':[], 'alt_sequence':[], 'alt_posterior':[]}
-    
+    data = {'id':[], 'ml_sequence':[], 'ml_posterior':[], 'alt_sequence':[], 'alt_posterior':[], 'support':[]}
     if infer_gaps:
         # Infer gaps in tree object
         tree = infer_gaps_in_tree(df_seq, tree, id_col=id_col)
@@ -159,7 +164,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
             data['ml_posterior'].append(ml_posterior)
             data['alt_sequence'].append(alt_sequence)
             data['alt_posterior'].append(alt_posterior)
-            
+            data['support'].append(node.support)
     else:
 
         for anc, df in ancestors.items():
@@ -198,6 +203,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
             data['ml_posterior'].append(ml_posterior)
             data['alt_sequence'].append(alt_sequence)
             data['alt_posterior'].append(alt_posterior)
+            data['support'].append(node.support)
             
     df_ancs = DataFrame(data)
     return df_seq, df_ancs, tree
