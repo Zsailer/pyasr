@@ -112,6 +112,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
 
     # Save ancestors to 'ancestors' directory in working_dir
     if save_ancestors:
+        os.makedirs(os.path.join(working_dir, 'ancestors'))
         for anc, df in ancestors.items():
             path = os.path.join(working_dir, 'ancestors', '{}'.format(anc))
             df.to_csv(path)
