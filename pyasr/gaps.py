@@ -1,11 +1,11 @@
 import dendropy
 
-def infer_gaps_in_tree(df_seq, tree, id_col='id'):
+def infer_gaps_in_tree(df_seq, tree, id_col='id', sequence_col='sequence'):
     """Adds a character matrix to DendroPy tree and infers gaps using Fitch's algorithm."""
     taxa = tree.taxon_namespace
 
     # Get alignment as fasta
-    alignment = df_seq.to_fasta(id_col=id_col, id_only=True)
+    alignment = df_seq.to_fasta(id_col=id_col, id_only=True, sequence_col=sequence_col)
 
     # Build a Sequence data matrix from Dendropy
     data = dendropy.ProteinCharacterMatrix.get(

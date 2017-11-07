@@ -121,7 +121,7 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
     data = {'id':[], 'ml_sequence':[], 'ml_posterior':[], 'alt_sequence':[], 'alt_posterior':[], 'support':[]}
     if infer_gaps:
         # Infer gaps in tree object
-        tree = infer_gaps_in_tree(df_seq, tree, id_col=id_col)
+        tree = infer_gaps_in_tree(df_seq, tree, id_col=id_col, sequence_col=sequence_col)
         gap = 21 # Gap index in state_sets
         
         for anc, df in ancestors.items():
