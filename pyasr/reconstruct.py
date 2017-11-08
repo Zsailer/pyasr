@@ -55,14 +55,27 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence', working_dir=
     # Update default arguments in place.
     default_options.update(**kwargs)
 
-    # Write file to disk
-    ### NEED TO FIX SEQUENCE COL!!
+    # Write out alignment for PAML
     n, m = len(df_seq), len(df_seq['sequence'][0])
     alignment_file = 'alignment.phy'
     alignment_path = os.path.join(working_dir, alignment_file)
     alignment_str = df_seq.to_fasta(sequence_col=sequence_col, id_col=id_col, id_only=True)
-    alignment_str = "{} {}\n".format(n,m) + alignment_str
     
+    # FORMATTING ALIGNMENT ANNOYINGLY. This is a hack for now.
+    lines = alignment_str.strip().split('\n')
+    header = "{}\n".format(lines[0])
+    seq = ''
+    fasta_str = '' 
+    for line in lines[1:]:
+        if line[0] == '>':
+            fasta_str += "{}\n".format(header)
+            header = "{}\n".format(line)
+        else:
+            header += line
+    fasta_str += "{}\n".format(header)
+    alignment_str = "{} {}\n".format(n,m) + fasta_str
+    
+    # Write to file
     with open(alignment_path, 'w') as f:
         f.write(alignment_str)
     
