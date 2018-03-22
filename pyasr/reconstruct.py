@@ -224,9 +224,6 @@ def reconstruct(df_seq, tree, id_col='id', sequence_col='sequence',
 
             # Build sequences and probability statistics
             for i, site in enumerate(ml_seq):
-                # Get a list of possible residues at each site.
-                sites = list(node.state_sets[i])
-
                 # If no gap, append ML site to ML sequence
                 ml_p.append(df['ml_posterior'][i])
 
