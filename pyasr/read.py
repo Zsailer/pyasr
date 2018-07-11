@@ -58,7 +58,7 @@ def read_codeml_output(
 
 
     # Compile a regular expression to find blocks of data for internal nodes
-    node_regex = re.compile("""Prob distribution at node [0-9]+, by site[-\w():.\s]+\n\n""")
+    node_regex = re.compile("""Prob distribution at node [0-9]+, by site[-\w():.\s]+\n""")
 
     # Strip the node number from this block of data.
     node_num_regex = re.compile("[0-9]+")
@@ -78,7 +78,9 @@ def read_codeml_output(
 
         # Iterate through each match for site data.
         ml_sequence, ml_posterior, alt_sequence, alt_posterior = [], [], [], []
+
         for site in site_regex.findall(node):
+
             # Iterate through residues
             scores = [float(site[i+2:i+7]) for i in range(0,len(site), 9)]
             residues = [site[i] for i in range(0, len(site), 9)]
@@ -108,6 +110,7 @@ def read_codeml_output(
             "alt_sequence",
             "alt_posterior"
         ]
+
         vals = [
             "".join(ml_sequence),
             sum(ml_posterior) / len(ml_posterior),
